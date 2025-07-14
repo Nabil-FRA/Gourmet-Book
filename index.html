@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmet-Book</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Libraries for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Lien vers le CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1><i class="fa-solid fa-utensils"></i> Gourmet-Book</h1>
+            <div class="header-actions">
+                <button id="shopping-list-btn" class="btn btn-secondary"><i class="fa-solid fa-cart-shopping"></i> Liste de courses</button>
+                <button id="add-recipe-btn" class="btn"><i class="fa-solid fa-plus"></i> Ajouter une recette</button>
+            </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar-menu">
+            <div class="sidebar-section">
+                <h2>Catégories</h2>
+                <nav>
+                    <div class="sidebar-menu-item active" data-filter="all"><i class="fa-solid fa-book-open"></i> Toutes</div>
+                    <div class="sidebar-menu-item" data-filter="favorites"><i class="fa-solid fa-star"></i> Favoris</div>
+                    <div class="sidebar-menu-item" data-filter="entrée"><i class="fa-solid fa-leaf"></i> Entrées</div>
+                    <div class="sidebar-menu-item" data-filter="plat"><i class="fa-solid fa-drumstick-bite"></i> Plats</div>
+                    <div class="sidebar-menu-item" data-filter="dessert"><i class="fa-solid fa-ice-cream"></i> Desserts</div>
+                    <div class="sidebar-menu-item" data-filter="autre"><i class="fa-solid fa-question-circle"></i> Autres</div>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="toolbar">
+                <input type="search" id="search-input" placeholder="Rechercher une recette...">
+            </div>
+            <div id="recipes-grid" class="recipes-grid"></div>
+        </main>
+    </div>
+
+    <!-- Modal générique -->
+    <div id="app-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer" id="modal-footer"></div>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmation -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p id="confirmation-message">Êtes-vous sûr ?</p>
+                <div class="confirmation-actions">
+                    <button id="confirm-cancel-btn" class="btn btn-secondary">Annuler</button>
+                    <button id="confirm-ok-btn" class="btn btn-danger">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <!-- Zone cachée pour la génération PDF -->
+    <div id="print-area" style="position: absolute; left: -9999px; top: auto; width: 800px; background: white;"></div>
+
+    <!-- Lien vers le fichier JavaScript -->
+    <script src="script.js" defer></script>
+</body>
+</html>
