@@ -19,9 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function loadState() {
-        state.recipes = JSON.parse(localStorage.getItem('gourmetBookRecipes')) || defaultData;
-        const savedShoppingList = localStorage.getItem('gourmetBookShoppingList');
-        state.shoppingList = new Set(savedShoppingList ? JSON.parse(savedShoppingList) : []);
+        try {
+            state.recipes = JSON.parse(localStorage.getItem('gourmetBookRecipes')) || defaultData;
+            const savedShoppingList = localStorage.getItem('gourmetBookShoppingList');
+            state.shoppingList = new Set(savedShoppingList ? JSON.parse(savedShoppingList) : []);
+        } catch (e) {
+            console.error("Erreur lors du chargement des données locales:", e);
+            state.recipes = defaultData;
+            state.shoppingList = new Set();
+        }
     }
 
     function saveState() {
@@ -35,14 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipesGrid = document.getElementById('recipes-grid');
     const addRecipeBtn = document.getElementById('add-recipe-btn');
     const appModal = document.getElementById('app-modal');
-    const closeModalBtn = document.querySelector('.close-btn');
     const searchInput = document.getElementById('search-input');
     const sidebarMenu = document.getElementById('sidebar-menu');
     const shoppingListBtn = document.getElementById('shopping-list-btn');
     const toast = document.getElementById('toast');
     const printArea = document.getElementById('print-area');
-    const modalFooter = document.getElementById('modal-footer');
-
+    
     const confirmationModal = document.getElementById('confirmation-modal');
     const confirmationMessage = document.getElementById('confirmation-message');
     const confirmOkBtn = document.getElementById('confirm-ok-btn');
@@ -100,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(mode, data = {}) {
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
         modalBody.innerHTML = '';
         modalFooter.innerHTML = '';
 
@@ -268,10 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const okHandler = () => {
             onConfirm();
             confirmationModal.style.display = 'none';
+            // Clean up listener
+            confirmOkBtn.removeEventListener('click', okHandler);
         };
 
         const cancelHandler = () => {
             confirmationModal.style.display = 'none';
+             // Clean up listener
+            confirmCancelBtn.removeEventListener('click', cancelHandler);
         };
         
         confirmOkBtn.addEventListener('click', okHandler, { once: true });
@@ -283,10 +292,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
     
     addRecipeBtn.addEventListener('click', () => openModal('add'));
-    closeModalBtn.addEventListener('click', closeModal);
-    window.addEventListener('click', (e) => { if (e.target === appModal || e.target === confirmationModal) { closeModal(); confirmationModal.style.display = 'none'; } });
     
-    document.body.addEventListener('submit', (e) => { if (e.target.id === 'recipe-form') handleFormSubmit(e); });
+    appModal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('close-btn')) {
+            closeModal();
+        }
+    });
+
+    window.addEventListener('click', (e) => { 
+        if (e.target === appModal || e.target === confirmationModal) { 
+            closeModal(); 
+            confirmationModal.style.display = 'none';
+        } 
+    });
+    
+    appModal.addEventListener('submit', (e) => {
+        if (e.target.id === 'recipe-form') {
+            handleFormSubmit(e);
+        }
+    });
 
     searchInput.addEventListener('input', renderRecipes);
     sidebarMenu.addEventListener('click', (e) => {
@@ -304,29 +328,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (card) openModal('view', { id: card.dataset.id });
     });
     
-    modalFooter.addEventListener('click', (e) => {
+    appModal.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
+
         const action = target.dataset.action;
         const id = target.dataset.id;
-        if (action === 'edit') openModal('edit', { id });
-        if (action === 'delete') {
-            showConfirmation("Supprimer cette recette ?", () => {
-                state.recipes = state.recipes.filter(r => r.id !== id);
-                saveState();
-                renderRecipes();
-                closeModal();
-                showToast("Recette supprimée.");
-            });
-        }
-        if (action === 'print') handlePrint(id);
-        if (action === 'add-to-shopping-list') handleAddToShoppingList(id);
-        if (action === 'clear-shopping-list') {
-            showConfirmation("Vider la liste de courses ?", () => {
-                state.shoppingList.clear();
-                saveState();
-                renderShoppingList();
-            });
+
+        switch (action) {
+            case 'edit':
+                openModal('edit', { id });
+                break;
+            case 'delete':
+                showConfirmation("Supprimer cette recette ?", () => {
+                    state.recipes = state.recipes.filter(r => r.id !== id);
+                    saveState();
+                    renderRecipes();
+                    closeModal();
+                    showToast("Recette supprimée.");
+                });
+                break;
+            case 'print':
+                handlePrint(id);
+                break;
+            case 'add-to-shopping-list':
+                handleAddToShoppingList(id);
+                break;
+            case 'clear-shopping-list':
+                showConfirmation("Vider la liste de courses ?", () => {
+                    state.shoppingList.clear();
+                    saveState();
+                    renderShoppingList();
+                });
+                break;
         }
     });
     
@@ -338,6 +372,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadState();
     renderRecipes();
 });
-</script>
-</body>
-</html>
+
